@@ -1,0 +1,1 @@
+# rip-avatar-generator
