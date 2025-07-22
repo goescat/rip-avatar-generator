@@ -3,63 +3,98 @@
 <head>
   <meta charset="UTF-8">
   <title>RIP avatar Beta!!</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
   <style>
-    #canvas {
-      border: 1px solid #ccc;
-      max-width: 100%;
-    }
+    canvas { border: 1px solid #ccc; }
+    .toolbar { margin-bottom: 10px; }
+    button, select { margin: 5px; }
   </style>
 </head>
 <body>
-  <h1>上傳照片</h1>
-  <input type="file" id="upload" accept="image/*">
-  <br><br>
-  <canvas id="canvas" width="500" height="500"></canvas>
-  <br>
-  <button id="downloadBtn">下載圖片</button>
+  <div class="toolbar">
+    <input type="file" id="upload" accept="image/*">
+
+    <label>選擇邊框：
+      <select id="frameSelect">
+        <option value="">無</option>
+        <option value="frame1.png">金邊</option>
+        <option value="frame2.png">花圈</option>
+      </select>
+    </label>
+
+    <label>裝飾品：</label>
+    <button onclick="addDecoration('star.png')">⭐</button>
+    <button onclick="addDecoration('hat.png')">🎩</button>
+    <button onclick="addDecoration('flower.png')">🌸</button>
+
+    <button onclick="downloadImage()">下載圖片</button>
+  </div>
+
+  <canvas id="c" width="600" height="600"></canvas>
 
   <script>
-    const upload = document.getElementById('upload');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const downloadBtn = document.getElementById('downloadBtn');
+    const canvas = new fabric.Canvas('c');
+    let backgroundImage;
+    let frameImage;
 
-    const frameImage = new Image();
-    frameImage.src = 'frame.png';
-
-    upload.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
+    // 上傳背景圖
+    document.getElementById('upload').addEventListener('change', function (e) {
       const reader = new FileReader();
-      reader.onload = function (event) {
-        const userImage = new Image();
-        userImage.onload = function () {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-          const scale = Math.min(canvas.width / userImage.width, canvas.height / userImage.height);
-          const x = (canvas.width - userImage.width * scale) / 2;
-          const y = (canvas.height - userImage.height * scale) / 2;
-          ctx.drawImage(userImage, x, y, userImage.width * scale, userImage.height * scale);
-
-          frameImage.onload = () => {
-            ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
-          };
-          if (frameImage.complete) {
-            ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
-          }
-        };
-        userImage.src = event.target.result;
+      reader.onload = function (f) {
+        fabric.Image.fromURL(f.target.result, function (img) {
+          canvas.clear();
+          backgroundImage = img;
+          img.scaleToWidth(canvas.width);
+          canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+          if (frameImage) canvas.add(frameImage);
+        });
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(e.target.files[0]);
     });
 
-    downloadBtn.addEventListener('click', () => {
-      const link = document.createElement('a');
-      link.download = 'framed-image.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+    // 套用邊框
+    document.getElementById('frameSelect').addEventListener('change', function (e) {
+      const src = e.target.value;
+      if (!src) {
+        if (frameImage) canvas.remove(frameImage);
+        frameImage = null;
+        canvas.renderAll();
+        return;
+      }
+
+      fabric.Image.fromURL(src, function (img) {
+        img.selectable = false;
+        img.evented = false;
+        img.scaleToWidth(canvas.width);
+        img.top = 0;
+        img.left = 0;
+
+        if (frameImage) canvas.remove(frameImage);
+        frameImage = img;
+        canvas.add(frameImage);
+        canvas.bringToFront(frameImage);
+      }, { crossOrigin: 'anonymous' });
     });
+
+    // 加入裝飾品
+    function addDecoration(src) {
+      fabric.Image.fromURL(src, function (img) {
+        img.scale(0.3);
+        img.left = 100 + Math.random() * 200;
+        img.top = 100 + Math.random() * 200;
+        canvas.add(img);
+      }, { crossOrigin: 'anonymous' });
+    }
+
+    // 匯出圖檔
+    function downloadImage() {
+      canvas.discardActiveObject();
+      canvas.renderAll();
+      const link = document.createElement('a');
+      link.download = 'result.png';
+      link.href = canvas.toDataURL({ format: 'png' });
+      link.click();
+    }
   </script>
 </body>
 </html>
