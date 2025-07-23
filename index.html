@@ -63,7 +63,7 @@
       <button onclick="addDecoration('/rip-avatar-generator/img/black_flower.png')">莊嚴</button>
       <button onclick="addDecoration('/rip-avatar-generator/img/gray_flower.png')">銀河</button>
       <button onclick="addDecoration('/rip-avatar-generator/img/flower.png')">清新雛菊</button>
-      <button onclick="addDecoration('/rip-avatar-generator/img/flowe2.png')">莊嚴白菊</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/flower2.png')">莊嚴白菊</button>
     </div>
 
     <div class="divider"></div>
@@ -230,6 +230,18 @@
         canvas.bringToFront(frameImage);
       }
     });
+
+    // 監聽物件移動，確保底圖不會跑到其他物件上方
+    canvas.on('object:moving', function(e) {
+      if (e.target === backgroundImage) {
+        canvas.sendToBack(backgroundImage);
+        // 確保緞帶在最上層
+        if (frameImage) {
+          canvas.bringToFront(frameImage);
+        }
+      }
+    });
+
   </script>
 </body>
 </html>
