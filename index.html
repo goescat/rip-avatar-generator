@@ -15,16 +15,16 @@
     <label>選擇緞帶：
       <select id="frameSelect">
         <option value="">無</option>
-        <option value="/img/black_ribbon_1.png">標準黑</option>
+        <option value="/rip-avatar-generator/img/black_ribbon_1.png">標準黑</option>
       </select>
     </label>
 
     <label>裝飾品：</label>
-    <button onclick="addDecoration('/img/red_flower.png')">喜紅</button>
-    <button onclick="addDecoration('/img/black_flower.png')">莊嚴</button>
-    <button onclick="addDecoration('/img/gray_flower.png')">銀河</button>
-    <button onclick="addDecoration('/img/flower.png')">清新雛菊</button>
-    <button onclick="addDecoration('/img/flowe2.png')">莊嚴白菊</button>
+    <button onclick="addDecoration('/rip-avatar-generator/img/red_flower.png')">喜紅</button>
+    <button onclick="addDecoration('/rip-avatar-generator/img/black_flower.png')">莊嚴</button>
+    <button onclick="addDecoration('/rip-avatar-generator/img/gray_flower.png')">銀河</button>
+    <button onclick="addDecoration('/rip-avatar-generator/img/flower.png')">清新雛菊</button>
+    <button onclick="addDecoration('/rip-avatar-generator/img/flowe2.png')">莊嚴白菊</button>
 
 
     <button onclick="downloadImage()">下載圖片</button>
@@ -37,16 +37,42 @@
     let backgroundImage;
     let frameImage;
 
-    // 上傳背景圖
-    document.getElementById('upload').addEventListener('change', function (e) {
+// 上傳背景圖
+document.getElementById('upload').addEventListener('change', function (e) {
       const reader = new FileReader();
       reader.onload = function (f) {
         fabric.Image.fromURL(f.target.result, function (img) {
-          canvas.clear();
+          // 移除之前的背景圖片
+          if (backgroundImage) {
+            canvas.remove(backgroundImage);
+          }
+
           backgroundImage = img;
-          img.scaleToWidth(canvas.width);
-          canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
-          if (frameImage) canvas.add(frameImage);
+
+          // 設置圖片可以被選中和編輯
+          img.selectable = true;
+          img.evented = true;
+
+          // 計算合適的初始大小（保持比例，適合畫布）
+          const maxSize = Math.min(canvas.width * 0.8, canvas.height * 0.8);
+          const scale = Math.min(maxSize / img.width, maxSize / img.height);
+          img.scale(scale);
+
+          // 將圖片置中
+          img.left = (canvas.width - img.getScaledWidth()) / 2;
+          img.top = (canvas.height - img.getScaledHeight()) / 2;
+
+          // 添加到畫布
+          canvas.add(img);
+
+          // 確保緞帶在最上層
+          if (frameImage) {
+            canvas.bringToFront(frameImage);
+          }
+
+          // 選中新添加的圖片
+          canvas.setActiveObject(img);
+          canvas.renderAll();
         });
       };
       reader.readAsDataURL(e.target.files[0]);
