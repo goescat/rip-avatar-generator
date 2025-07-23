@@ -4,6 +4,7 @@
   <title>離職照片產生器</title>
   <meta charset="UTF-8">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+
   <style>
     h1 {
       text-align: center;
@@ -285,19 +286,40 @@
       }
     });
 
-    // 匯出圖檔
     function downloadImage() {
       canvas.discardActiveObject();
       canvas.renderAll();
-      const link = document.createElement('a');
-      link.download = 'memorial_avatar.png';
-      link.href = canvas.toDataURL({
-        format: 'png',
-        quality: 1.0,
-        multiplier: 2
-      });
-      link.click();
+      const dataURL = canvas.toDataURL({ format: 'png', quality: 1.0, multiplier: 2 });
+
+      if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+        // 手機：打開圖片分頁
+        const newTab = window.open();
+        newTab.document.write(`<img src="${dataURL}" style="max-width:100%;height:auto;">`);
+        newTab.document.title = '長按圖片另存新檔';
+      } else {
+        // 桌機：直接下載
+        const link = document.createElement('a');
+        link.download = 'memorial_avatar.png';
+        link.href = dataURL;
+        link.click();
+      }
     }
+
+
+    // // 匯出圖檔
+    // function downloadImage() {
+    //   canvas.discardActiveObject();
+    //   canvas.renderAll();
+    //   const link = document.createElement('a');
+    //   link.download = 'memorial_avatar.png';
+    //   link.href = canvas.toDataURL({
+    //     format: 'png',
+    //     quality: 1.0,
+    //     multiplier: 2
+    //   });
+
+    //   link.click();
+    // }
   </script>
 </body>
 
