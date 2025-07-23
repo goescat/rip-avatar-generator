@@ -123,6 +123,9 @@
           // 添加到畫布
           canvas.add(img);
 
+          // 確保底圖在最下層
+          canvas.sendToBack(backgroundImage);
+
           // 確保緞帶在最上層
           if (frameImage) {
             canvas.bringToFront(frameImage);
@@ -160,6 +163,11 @@
         }
         frameImage = img;
         canvas.add(frameImage);
+
+        // 立即調整層次順序
+        if (backgroundImage) {
+          canvas.sendToBack(backgroundImage);
+        }
         canvas.bringToFront(frameImage);
         canvas.renderAll();
       }, { crossOrigin: 'anonymous' });
@@ -175,7 +183,10 @@
         img.evented = true;
         canvas.add(img);
 
-        // 確保緞帶在最上層
+        // 立即調整層次順序
+        if (backgroundImage) {
+          canvas.sendToBack(backgroundImage);
+        }
         if (frameImage) {
           canvas.bringToFront(frameImage);
         }
@@ -224,8 +235,13 @@
       link.click();
     }
 
-    // 確保緞帶始終在最上層
+    // 確保層次順序：底圖在最下層，緞帶在最上層
     canvas.on('object:added', function(e) {
+      // 如果添加的是底圖，保持在最下層
+      if (e.target === backgroundImage) {
+        canvas.sendToBack(backgroundImage);
+      }
+      // 如果存在緞帶，保持在最上層
       if (frameImage && e.target !== frameImage) {
         canvas.bringToFront(frameImage);
       }
@@ -241,7 +257,6 @@
         }
       }
     });
-
   </script>
 </body>
 </html>
