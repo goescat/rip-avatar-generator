@@ -4,41 +4,99 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
   <style>
     canvas { border: 1px solid #ccc; }
-    .toolbar { margin-bottom: 10px; }
-    button, select { margin: 5px; }
+    .toolbar {
+      margin-bottom: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    button, select {
+      margin: 2px;
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+    button {
+      background: #f5f5f5;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e5e5e5;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .divider {
+      width: 1px;
+      height: 30px;
+      background: #ccc;
+      margin: 0 10px;
+    }
   </style>
 </head>
 <body>
   <div class="toolbar">
-    <input type="file" id="upload" accept="image/*">
+    <div class="control-group">
+      <input type="file" id="upload" accept="image/*">
+      <button onclick="deleteSelected()">刪除選中物件</button>
+    </div>
 
-    <label>選擇緞帶：
-      <select id="frameSelect">
-        <option value="">無</option>
-        <option value="/rip-avatar-generator/img/black_ribbon_1.png">標準黑</option>
-      </select>
-    </label>
+    <div class="divider"></div>
 
-    <label>裝飾品：</label>
-    <button onclick="addDecoration('/rip-avatar-generator/img/red_flower.png')">喜紅</button>
-    <button onclick="addDecoration('/rip-avatar-generator/img/black_flower.png')">莊嚴</button>
-    <button onclick="addDecoration('/rip-avatar-generator/img/gray_flower.png')">銀河</button>
-    <button onclick="addDecoration('/rip-avatar-generator/img/flower.png')">清新雛菊</button>
-    <button onclick="addDecoration('/rip-avatar-generator/img/flowe2.png')">莊嚴白菊</button>
+    <div class="control-group">
+      <label>選擇緞帶：
+        <select id="frameSelect">
+          <option value="">無</option>
+          <option value="/rip-avatar-generator/img/black_ribbon_1.png">標準黑</option>
+        </select>
+      </label>
+    </div>
 
+    <div class="divider"></div>
 
-    <button onclick="downloadImage()">下載圖片</button>
+    <div class="control-group">
+      <label>裝飾品：</label>
+      <button onclick="addDecoration('/rip-avatar-generator/img/red_flower.png')">喜紅</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/black_flower.png')">莊嚴</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/gray_flower.png')">銀河</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/flower.png')">清新雛菊</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/flowe2.png')">莊嚴白菊</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="control-group">
+      <button onclick="downloadImage()">下載圖片</button>
+    </div>
   </div>
 
   <canvas id="c" width="600" height="600"></canvas>
+
+  <div style="margin-top: 10px; color: #666; font-size: 14px;">
+    <strong>法喜充滿</strong>
+    <ul style="margin: 5px 0; padding-left: 20px;">
+      <li>我想想看</li>
+      <li>要說啥</li>
+      <li>離職換個頭像</li>
+      <li>我們懷念他</li>
+      <li>我們懷念他</li>
+      <li>我們懷念他</li>
+    </ul>
+  </div>
 
   <script>
     const canvas = new fabric.Canvas('c');
     let backgroundImage;
     let frameImage;
 
-// 上傳背景圖
-document.getElementById('upload').addEventListener('change', function (e) {
+    // 設置畫布背景為白色
+    canvas.backgroundColor = '#ffffff';
+
+    // 上傳背景圖
+    document.getElementById('upload').addEventListener('change', function (e) {
       const reader = new FileReader();
       reader.onload = function (f) {
         fabric.Image.fromURL(f.target.result, function (img) {
@@ -82,8 +140,10 @@ document.getElementById('upload').addEventListener('change', function (e) {
     document.getElementById('frameSelect').addEventListener('change', function (e) {
       const src = e.target.value;
       if (!src) {
-        if (frameImage) canvas.remove(frameImage);
-        frameImage = null;
+        if (frameImage) {
+          canvas.remove(frameImage);
+          frameImage = null;
+        }
         canvas.renderAll();
         return;
       }
@@ -95,10 +155,13 @@ document.getElementById('upload').addEventListener('change', function (e) {
         img.top = 0;
         img.left = 0;
 
-        if (frameImage) canvas.remove(frameImage);
+        if (frameImage) {
+          canvas.remove(frameImage);
+        }
         frameImage = img;
         canvas.add(frameImage);
         canvas.bringToFront(frameImage);
+        canvas.renderAll();
       }, { crossOrigin: 'anonymous' });
     });
 
@@ -108,19 +171,65 @@ document.getElementById('upload').addEventListener('change', function (e) {
         img.scale(0.3);
         img.left = 100 + Math.random() * 200;
         img.top = 100 + Math.random() * 200;
+        img.selectable = true;
+        img.evented = true;
         canvas.add(img);
+
+        // 確保緞帶在最上層
+        if (frameImage) {
+          canvas.bringToFront(frameImage);
+        }
+
+        // 選中新添加的裝飾品
+        canvas.setActiveObject(img);
+        canvas.renderAll();
       }, { crossOrigin: 'anonymous' });
     }
+
+    // 刪除選中的物件
+    function deleteSelected() {
+      const activeObject = canvas.getActiveObject();
+      if (activeObject) {
+        // 如果刪除的是背景圖片，清空引用
+        if (activeObject === backgroundImage) {
+          backgroundImage = null;
+        }
+        // 如果刪除的是緞帶，清空引用
+        if (activeObject === frameImage) {
+          frameImage = null;
+        }
+        canvas.remove(activeObject);
+        canvas.renderAll();
+      }
+    }
+
+    // 鍵盤快捷鍵支持
+    document.addEventListener('keydown', function(e) {
+      // Delete 或 Backspace 鍵刪除選中物件
+      if ((e.key === 'Delete' || e.key === 'Backspace') && canvas.getActiveObject()) {
+        deleteSelected();
+      }
+    });
 
     // 匯出圖檔
     function downloadImage() {
       canvas.discardActiveObject();
       canvas.renderAll();
       const link = document.createElement('a');
-      link.download = 'result.png';
-      link.href = canvas.toDataURL({ format: 'png' });
+      link.download = 'memorial_avatar.png';
+      link.href = canvas.toDataURL({
+        format: 'png',
+        quality: 1.0
+      });
       link.click();
     }
+
+    // 確保緞帶始終在最上層
+    canvas.on('object:added', function(e) {
+      if (frameImage && e.target !== frameImage) {
+        canvas.bringToFront(frameImage);
+      }
+    });
   </script>
 </body>
 </html>
