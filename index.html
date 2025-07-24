@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 
 <head>
-  <title>離職照片產生器</title>
+  <title>離職遺照產生器</title>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 
   <style>
@@ -51,16 +52,22 @@
     }
 
     .canvas-wrapper {
+      margin: 0 auto;
       display: flex;
       justify-content: center;
       align-items: center;
+      width: 100%;
+      max-width: 600px;
     }
 
     canvas {
       border: 1px solid #ccc;
       display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      /* 保持正方形 */
+      height: auto;
     }
-
 
     .toolbar {
       margin-bottom: 10px;
@@ -99,25 +106,72 @@
       background: #ccc;
       margin: 0 10px;
     }
+
+    @media (max-width: 768px) {
+      .divider {
+        width: 100%;
+        height: 1px;
+        margin: 10px 0;
+      }
+
+    }
+
+    .description-wrapper {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+
+    .description-wrapper.open {
+      max-height: 1000px;
+      /* 足夠高度以容納內容 */
+    }
+
+    .description {
+      padding: 0 0 10px 0;
+      color: #141414;
+      font-size: 14px;
+      line-height: 1.6;
+    }
   </style>
 </head>
 
 <body>
-  <h1>離職照片產生器</h1>
-  <div class="description">
+  <h1 style="margin-bottom: 0;">離職遺照產生器
+    <span id="toggleDescription" style="
+    font-size: 12px;
+    color: #666;
+    cursor: pointer;
+    margin-left: 9px;
+    font-weight: normal;
+    text-decoration: underline;
+  ">
+      這是啥？
+    </span>
+  </h1>
+  <!-- <button id="toggleDescription" style="margin-bottom: 10px;">這是啥？</button> -->
+  <div class="description-wrapper">
+    <div class="description">
+      <strong>講重點：幫你做一張遺照風格頭像。</strong><br>
+      <br>
+      曾經某次離職時，<br>
+      我把自己的 Slack 頭像換成了一張有黑色緞帶和小白花裝飾的「遺照風」照片。<br>
+      同事看到後問我：「這是哪裡來的產生器？」<br>
+      於是我就做了這個。<br><br>
 
-    之前離職的時候，在 last day 我把 Slack 的頭像換成了有黑色緞帶和小白花裝飾遺照 style 相片，<br>
-    然後同事問我：「這是哪裡來的產生器？」<br>
-    所以我就做了這個產生器。<br><br>
-    等 slack 帳號被 deactivate 之後，照片會變成黑白的，<br>
-    好同事們在因為這人寫這三小幹扣，還沒有半點文件的時候考古對話串看到這樣的頭像，<br>
-    一定會覺得非常的莊嚴吧。<br>
-    <br>
-    最後最後，這個產生器不會收集任何個人資料，也不會儲存你的圖片，請放心，而且我也沒錢存檔案啦。<br>
-    <br>
+      等到 Slack 帳號被 deactivate，<br>
+      頭像還會自動變成黑白的。<br><br>
 
+      當好同事們哪天因為某段我留下來的、<br>
+      完全不知道在衝啥小、沒文件、沒註解的幹扣，<br>
+      在考古對話紀錄時，<br>
+      看到這張肅穆又莊嚴的頭像，應該會不忍苛責（？）<br><br>
+
+      最後請放心使用，這個產生器不會蒐集任何個人資料，也不會儲存你的圖片——<br>
+      畢竟我也沒錢付費儲存空間啦。
+    </div>
   </div>
-
+  <br>
   <div class="toolbar">
     <div class="control-group">
       <input type="file" id="upload" accept="image/*" style="display: none;">
@@ -128,21 +182,24 @@
       <button onclick="sendToBack()">照片到最下面</button>
 
     </div>
-
-
     <div class="divider"></div>
-
     <div class="control-group">
       <label>選擇緞帶：
-        <select id="frameSelect">
+        <select id="TopframeSelect">
           <option value="">無</option>
           <option value="/rip-avatar-generator/img/black_ribbon_1.png">肅穆黑</option>
           <option value="/rip-avatar-generator/img/red_ribbon_1.png">幻變星河</option>
         </select>
       </label>
     </div>
+  </div>
 
-    <div class="divider"></div>
+  <div class="canvas-wrapper">
+    <canvas id="c" width="600" height="600"></canvas>
+  </div>
+  <br>
+
+  <div class="toolbar">
 
     <div class="control-group">
       <label>裝飾品：</label>
@@ -152,11 +209,10 @@
       <button onclick="addDecoration('/rip-avatar-generator/img/flower.png')">雛菊</button>
       <button onclick="addDecoration('/rip-avatar-generator/img/flower2.png')">白菊</button>
       <button onclick="addDecoration('/rip-avatar-generator/img/we_miss_you.png')">我們懷念他</button>
+
+      <button onclick="deleteSelected()" style="display: inline-block; padding: 8px 16px; background-color: #5e3737; color: white;">刪除選中裝飾</button>
     </div>
 
-    <div class="divider"></div>
-
-    <button onclick="deleteSelected()">刪除選中裝飾</button>
 
     <div class="divider"></div>
 
@@ -164,11 +220,9 @@
       <button onclick="downloadImage()"
         style="display: inline-block; padding: 8px 16px; background-color: #61b54c; color: white;">下載照片</button>
     </div>
+
   </div>
 
-  <div class="canvas-wrapper">
-    <canvas id="c" width="600" height="600"></canvas>
-  </div>
 
   <script>
     const canvas = new fabric.Canvas('c');
@@ -177,6 +231,18 @@
 
     // 設置畫布背景為白色
     canvas.backgroundColor = '#ffffff';
+
+    function resizeCanvas() {
+      const wrapper = document.querySelector('.canvas-wrapper');
+      const size = wrapper.offsetWidth;
+      canvas.setWidth(size);
+      canvas.setHeight(size);
+      canvas.renderAll();
+    }
+
+    window.addEventListener('load', resizeCanvas);
+    window.addEventListener('resize', resizeCanvas);
+
 
     // 上傳背景圖
     document.getElementById('upload').addEventListener('change', function (e) {
@@ -215,7 +281,7 @@
     });
 
     // 套用邊框
-    document.getElementById('frameSelect').addEventListener('change', function (e) {
+    document.getElementById('TopframeSelect').addEventListener('change', function (e) {
       const src = e.target.value;
       if (!src) {
         if (frameImage) {
@@ -247,9 +313,15 @@
     // 加入裝飾品
     function addDecoration(src) {
       fabric.Image.fromURL(src, function (img) {
-        img.scale(0.3);
-        img.left = 100 + Math.random() * 200;
-        img.top = 100 + Math.random() * 200;
+        const canvasSize = canvas.getWidth(); // 取得當前畫布寬度（正方形）
+
+        // 計算縮放比例：以裝飾寬度 100px 為基準
+        const targetSize = canvasSize * 0.35; // 希望裝飾佔畫布的 20%
+        const scale = targetSize / Math.max(img.width, img.height);
+        img.scale(scale);
+
+        img.left = (canvasSize / 6) + Math.random() * (canvasSize / 3);
+        img.top = (canvasSize / 6) + Math.random() * (canvasSize / 3);
         img.selectable = true;
         img.evented = true;
         canvas.add(img);
@@ -305,21 +377,14 @@
       }
     }
 
+    const toggleBtn = document.getElementById('toggleDescription');
+    const wrapper = document.querySelector('.description-wrapper');
 
-    // // 匯出圖檔
-    // function downloadImage() {
-    //   canvas.discardActiveObject();
-    //   canvas.renderAll();
-    //   const link = document.createElement('a');
-    //   link.download = 'memorial_avatar.png';
-    //   link.href = canvas.toDataURL({
-    //     format: 'png',
-    //     quality: 1.0,
-    //     multiplier: 2
-    //   });
+    toggleBtn.addEventListener('click', () => {
+      const isOpen = wrapper.classList.toggle('open');
+      toggleBtn.textContent = isOpen ? '不要幹話' : '這是啥？';
+    });
 
-    //   link.click();
-    // }
   </script>
 </body>
 
