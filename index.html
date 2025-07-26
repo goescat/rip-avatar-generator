@@ -179,7 +179,8 @@
         style="display: inline-block; padding: 8px 16px; background-color: #7d7a6c; color: white; cursor: pointer; border-radius: 4px;">
         選擇紀念照片
       </label>
-      <button onclick="sendToBack()">照片到最下面</button>
+      <button onclick="backgroundSendToBack()">照片到最下面</button>
+      <button onclick="fullScreen()">照片滿版</button>
 
     </div>
     <div class="divider"></div>
@@ -203,35 +204,50 @@
 
     <div class="control-group">
       <label>裝飾品：</label>
+      <button onclick="addDecoration('/rip-avatar-generator/img/dang.png')">奠</button>
       <button onclick="addDecoration('/rip-avatar-generator/img/red_flower.png')">紅花</button>
       <button onclick="addDecoration('/rip-avatar-generator/img/black_flower.png')">黑花</button>
       <button onclick="addDecoration('/rip-avatar-generator/img/gray_flower.png')">銀花</button>
       <button onclick="addDecoration('/rip-avatar-generator/img/flower.png')">雛菊</button>
       <button onclick="addDecoration('/rip-avatar-generator/img/flower2.png')">白菊</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/cloud.png')">雲彩</button>
       <button onclick="addDecoration('/rip-avatar-generator/img/we_miss_you.png')">我們懷念他</button>
-
-      <button onclick="deleteSelected()" style="display: inline-block; padding: 8px 16px; background-color: #5e3737; color: white;">刪除選中裝飾</button>
+      <button onclick="centerSelected()"
+        style="display: inline-block; padding: 8px 16px; background-color: #acd3d6;">裝飾置中</button>
     </div>
+    <button onclick="deleteSelected()"
+      style="display: inline-block; padding: 8px 16px; background-color: #5e3737; color: white;">刪除選中裝飾</button>
+  </div>
 
 
-    <div class="divider"></div>
+  <div class="divider"></div>
 
-    <div class="control-group">
-      <button onclick="downloadImage()"
-        style="display: inline-block; padding: 8px 16px; background-color: #61b54c; color: white;">下載照片</button>
-    </div>
+  <div class="control-group">
+    <button onclick="downloadImage()"
+      style="display: inline-block; padding: 8px 16px; background-color: #61b54c; color: white;">下載照片</button>
+  </div>
 
   </div>
 
 
   <script>
+    // 小故事幹話按鈕
+    const toggleBtn = document.getElementById('toggleDescription');
+    const wrapper = document.querySelector('.description-wrapper');
+
+    toggleBtn.addEventListener('click', () => {
+      const isOpen = wrapper.classList.toggle('open');
+      toggleBtn.textContent = isOpen ? '不要幹話' : '這是啥？';
+    });
+
+    // 畫布 aka 照片編輯區
     const canvas = new fabric.Canvas('c');
     let backgroundImage;
     let frameImage;
 
-    // 設置畫布背景為白色
     canvas.backgroundColor = '#ffffff';
 
+    // 畫布大小 RWD
     function resizeCanvas() {
       const wrapper = document.querySelector('.canvas-wrapper');
       const size = wrapper.offsetWidth;
@@ -243,8 +259,7 @@
     window.addEventListener('load', resizeCanvas);
     window.addEventListener('resize', resizeCanvas);
 
-
-    // 上傳背景圖
+    // 上傳背景圖片
     document.getElementById('upload').addEventListener('change', function (e) {
       const reader = new FileReader();
       reader.onload = function (f) {
@@ -273,7 +288,7 @@
           canvas.add(img);
 
           // 選中新添加的圖片
-          canvas.setActiveObject(img);
+          // canvas.setActiveObject(img);
           canvas.renderAll();
         });
       };
@@ -291,7 +306,6 @@
         canvas.renderAll();
         return;
       }
-
       fabric.Image.fromURL(src, function (img) {
         img.selectable = false;
         img.evented = false;
@@ -304,6 +318,8 @@
         }
         frameImage = img;
         canvas.add(frameImage);
+        canvas.sendToBack(frameImage);
+        backgroundSendToBack();
 
         canvas.setActiveObject(frameImage);
         canvas.renderAll();
@@ -313,10 +329,10 @@
     // 加入裝飾品
     function addDecoration(src) {
       fabric.Image.fromURL(src, function (img) {
-        const canvasSize = canvas.getWidth(); // 取得當前畫布寬度（正方形）
+        const canvasSize = canvas.getWidth();
 
         // 計算縮放比例：以裝飾寬度 100px 為基準
-        const targetSize = canvasSize * 0.35; // 希望裝飾佔畫布的 20%
+        const targetSize = canvasSize * 0.35;
         const scale = targetSize / Math.max(img.width, img.height);
         img.scale(scale);
 
@@ -333,6 +349,15 @@
     }
 
 
+    function centerSelected() {
+      const activeObject = canvas.getActiveObject();
+      if (activeObject) {
+        activeObject.left = (canvas.width - activeObject.getScaledWidth()) / 2;
+        // activeObject.top = (canvas.height - activeObject.getScaledHeight()) / 2;
+        canvas.renderAll();
+      }
+    }
+
     // 刪除選中的物件
     function deleteSelected() {
       const activeObject = canvas.getActiveObject();
@@ -342,12 +367,37 @@
       }
     }
 
-    function sendToBack() {
+    function backgroundSendToBack() {
       if (backgroundImage) {
         canvas.discardActiveObject();
         // 將底圖送到最下層
         canvas.sendToBack(backgroundImage);
       }
+    }
+
+    function fullScreen() {
+      if (!backgroundImage) return;
+
+      // 先取得畫布尺寸
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+
+      // 取得圖片原始尺寸
+      const imgWidth = backgroundImage.width;
+      const imgHeight = backgroundImage.height;
+
+      // 計算讓圖片等比例填滿畫布的縮放比例
+      const scale = Math.max(canvasWidth / imgWidth, canvasHeight / imgHeight);
+
+      // 設定縮放
+      backgroundImage.scale(scale);
+
+      // 置中圖片
+      backgroundImage.left = (canvasWidth - backgroundImage.getScaledWidth()) / 2;
+      backgroundImage.top = (canvasHeight - backgroundImage.getScaledHeight()) / 2;
+
+      // 更新畫布
+      canvas.renderAll();
     }
 
     // 鍵盤快捷鍵支持
@@ -366,6 +416,7 @@
       if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
         // 手機：打開圖片分頁
         const newTab = window.open();
+        newTab.document.write(`<h1>長按儲存，有些連結內嵌瀏覽器可能無法儲存QAQ</h1>`);
         newTab.document.write(`<img src="${dataURL}" style="max-width:100%;height:auto;">`);
         newTab.document.title = '長按圖片另存新檔';
       } else {
@@ -376,15 +427,6 @@
         link.click();
       }
     }
-
-    const toggleBtn = document.getElementById('toggleDescription');
-    const wrapper = document.querySelector('.description-wrapper');
-
-    toggleBtn.addEventListener('click', () => {
-      const isOpen = wrapper.classList.toggle('open');
-      toggleBtn.textContent = isOpen ? '不要幹話' : '這是啥？';
-    });
-
   </script>
 </body>
 
