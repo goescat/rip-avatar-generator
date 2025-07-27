@@ -252,6 +252,17 @@
 
     // 畫布 aka 照片編輯區
     const canvas = new fabric.Canvas('c');
+
+    canvas.on('selection:created', bringActiveToFront);
+    canvas.on('selection:updated', bringActiveToFront);
+
+    function bringActiveToFront(e) {
+      const obj = e.selected?.[0];
+      if (obj && obj !== frameImage && obj !== backgroundImage) {
+        canvas.bringToFront(obj);
+      }
+    }
+
     let backgroundImage;
     let frameImage;
 
