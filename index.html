@@ -6,6 +6,15 @@
   <meta name="viewport" content="width=device-width">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/black_ribbon_1.png">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/dang.png">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/red_flower.png">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/black_flower.png">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/gray_flower.png">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/flower.png">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/flower2.png">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/cloud.png">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/we_miss_you.png">
   <style>
     h1 {
       text-align: center;
@@ -240,6 +249,20 @@
       toggleBtn.textContent = isOpen ? '不要幹話' : '這是啥？';
     });
 
+    // 圖片快取
+    const imageCache = {};
+
+    function loadCachedImage(url, callback) {
+      if (imageCache[url]) {
+        callback(imageCache[url].clone());
+      } else {
+        fabric.Image.fromURL(url, function (img) {
+          imageCache[url] = img;
+          callback(img.clone());
+        }, { crossOrigin: 'anonymous' });
+      }
+    }
+
     // 畫布 aka 照片編輯區
     const canvas = new fabric.Canvas('c');
     let backgroundImage;
@@ -263,7 +286,7 @@
     document.getElementById('upload').addEventListener('change', function (e) {
       const reader = new FileReader();
       reader.onload = function (f) {
-        fabric.Image.fromURL(f.target.result, function (img) {
+        loadCachedImage(src, function(img) {
           // 移除之前的背景圖片
           if (backgroundImage) {
             canvas.remove(backgroundImage);
