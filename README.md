@@ -2,6 +2,9 @@
 
 https://goescat.github.io/rip-avatar-generator/
 
+July. 27 relese note
+圖片壓縮 - 家裡網路太好了，沒發現一般手機網路載入素材要超久
+
 July. 26 relese note
 
 1. 照片滿版功能
