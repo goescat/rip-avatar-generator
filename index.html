@@ -249,7 +249,6 @@
       toggleBtn.textContent = isOpen ? '不要幹話' : '這是啥？';
     });
 
-    // 圖片快取
     const imageCache = {};
 
     function loadCachedImage(url, callback) {
@@ -286,7 +285,7 @@
     document.getElementById('upload').addEventListener('change', function (e) {
       const reader = new FileReader();
       reader.onload = function (f) {
-        loadCachedImage(src, function(img) {
+        fabric.Image.fromURL(f.target.result, function (img) {
           // 移除之前的背景圖片
           if (backgroundImage) {
             canvas.remove(backgroundImage);
