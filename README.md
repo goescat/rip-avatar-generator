@@ -3,7 +3,9 @@
 https://goescat.github.io/rip-avatar-generator/
 
 July. 27 relese note
-圖片壓縮 - 家裡網路太好了，沒發現一般手機網路載入素材要超久
+1. 圖片換 webp、預先載入
+
+--
 
 July. 26 relese note
 
@@ -13,11 +15,6 @@ July. 26 relese note
 4. 緞帶和裝飾品層級的小小修改
 5. 我們懷念他素材小小更新（字體置中了！）
 6. 新增素材：雲彩和奠
-
-預計更新：
-手機手勢操作功能
-
---
 
 July. 24 relese note
 

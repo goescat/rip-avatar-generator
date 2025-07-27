@@ -6,15 +6,16 @@
   <meta name="viewport" content="width=device-width">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 
-  <link rel="preload" as="image" href="/rip-avatar-generator/img/black_ribbon_1.png">
-  <link rel="preload" as="image" href="/rip-avatar-generator/img/dang.png">
-  <link rel="preload" as="image" href="/rip-avatar-generator/img/red_flower.png">
-  <link rel="preload" as="image" href="/rip-avatar-generator/img/black_flower.png">
-  <link rel="preload" as="image" href="/rip-avatar-generator/img/gray_flower.png">
-  <link rel="preload" as="image" href="/rip-avatar-generator/img/flower.png">
-  <link rel="preload" as="image" href="/rip-avatar-generator/img/flower2.png">
-  <link rel="preload" as="image" href="/rip-avatar-generator/img/cloud.png">
-  <link rel="preload" as="image" href="/rip-avatar-generator/img/we_miss_you.png">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/black_ribbon_1.webp">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/red_ribbon_1.webp">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/dang.webp">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/red_flower.webp">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/black_flower.webp">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/gray_flower.webp">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/flower.webp">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/flower2.webp">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/cloud.webp">
+  <link rel="preload" as="image" href="/rip-avatar-generator/img/we_miss_you.webp">
   <style>
     h1 {
       text-align: center;
@@ -197,8 +198,8 @@
       <label>選擇緞帶：
         <select id="TopframeSelect">
           <option value="">無</option>
-          <option value="/rip-avatar-generator/img/black_ribbon_1.png">肅穆黑</option>
-          <option value="/rip-avatar-generator/img/red_ribbon_1.png">幻變星河</option>
+          <option value="/rip-avatar-generator/img/black_ribbon_1.webp">肅穆黑</option>
+          <option value="/rip-avatar-generator/img/red_ribbon_1.webp">幻變星河</option>
         </select>
       </label>
     </div>
@@ -213,14 +214,14 @@
 
     <div class="control-group">
       <label>裝飾品：</label>
-      <button onclick="addDecoration('/rip-avatar-generator/img/dang.png')">奠</button>
-      <button onclick="addDecoration('/rip-avatar-generator/img/red_flower.png')">紅花</button>
-      <button onclick="addDecoration('/rip-avatar-generator/img/black_flower.png')">黑花</button>
-      <button onclick="addDecoration('/rip-avatar-generator/img/gray_flower.png')">銀花</button>
-      <button onclick="addDecoration('/rip-avatar-generator/img/flower.png')">雛菊</button>
-      <button onclick="addDecoration('/rip-avatar-generator/img/flower2.png')">白菊</button>
-      <button onclick="addDecoration('/rip-avatar-generator/img/cloud.png')">雲彩</button>
-      <button onclick="addDecoration('/rip-avatar-generator/img/we_miss_you.png')">我們懷念他</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/dang.webp')">奠</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/red_flower.webp')">紅花</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/black_flower.webp')">黑花</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/gray_flower.webp')">銀花</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/flower.webp')">雛菊</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/flower2.webp')">白菊</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/cloud.webp')">雲彩</button>
+      <button onclick="addDecoration('/rip-avatar-generator/img/we_miss_you.webp')">我們懷念他</button>
       <button onclick="centerSelected()"
         style="display: inline-block; padding: 8px 16px; background-color: #acd3d6;">裝飾置中</button>
     </div>
@@ -248,19 +249,6 @@
       const isOpen = wrapper.classList.toggle('open');
       toggleBtn.textContent = isOpen ? '不要幹話' : '這是啥？';
     });
-
-    const imageCache = {};
-
-    function loadCachedImage(url, callback) {
-      if (imageCache[url]) {
-        callback(imageCache[url].clone());
-      } else {
-        fabric.Image.fromURL(url, function (img) {
-          imageCache[url] = img;
-          callback(img.clone());
-        }, { crossOrigin: 'anonymous' });
-      }
-    }
 
     // 畫布 aka 照片編輯區
     const canvas = new fabric.Canvas('c');
@@ -444,7 +432,7 @@
       } else {
         // 桌機：直接下載
         const link = document.createElement('a');
-        link.download = 'memorial_avatar.png';
+        link.download = 'memorial_avatar.webp';
         link.href = dataURL;
         link.click();
       }
